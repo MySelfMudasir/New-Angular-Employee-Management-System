@@ -1,0 +1,79 @@
+
+<p-fluid>
+    <form action="" [formGroup]="addEmployeeForm">
+    <div class="flex mt-8">
+        <div class="card flex flex-col gap-6 w-full">
+                <div class="font-semibold text-xl">Add Employee Data</div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="firstname2">Firstname</label>
+                        <input pInputText formControlName="firstname" name="firstname" id="firstname2" type="text" />
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="lastname2">Lastname</label>
+                        <input pInputText formControlName="lastname" name="lastname" id="lastname2" type="text" />
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="firstname2">Email</label>
+                        <input pInputText formControlName="email" name="email" id="email" type="text" />
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="lastname2">Phone</label>
+                        <input pInputText formControlName="phone" name="phone" id="phone" type="text" />
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap">
+                    <label for="address">Address</label>
+                    <textarea pTextarea formControlName="address" name="address" id="address" rows="4"></textarea>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="state">State</label>
+                        <p-select id="state" [options]="states" [showClear]="true" formControlName="state" name="state"
+                            optionLabel="name" optionValue="code" placeholder="Select a state"
+                            class="w-full"></p-select>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="city">City</label>
+                        <input pInputText formControlName="city" name="city" type="text" />
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="zip">Zip</label>
+                        <input pInputText formControlName="zipcode" name="zipcode" id="zip" type="text" />
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full">
+                        <label for="role">Role</label>
+                        <p-select [options]="roles" [showClear]="true" formControlName="role" name="role" optionLabel="name" optionValue="code" placeholder="Select a role" id="role" type="text" class="w-full"></p-select>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="col-12">
+                        <label for="Profile Pic">Profile Pic</label>
+                        <p-fileupload name="demo[]" (onUpload)="onUpload($event)" [multiple]="true" accept="image/*" maxFileSize="1000000" mode="advanced" url="https://www.primefaces.org/cdn/api/upload.php">
+                            <ng-template #empty>
+                                <div style="padding: 50px">Drag and drop files to here to upload.</div>
+                            </ng-template>
+                            <ng-template #content>
+                                <ul *ngIf="uploadedFiles.length">
+                                    <li *ngFor="let file of uploadedFiles">{{ file.name }} - {{ file.size }} bytes</li>
+                                </ul>
+                            </ng-template>
+                        </p-fileupload>
+                    </div>
+                    <div class="col-12">
+                        <label for="Profile Pic">Biomatric Verification</label>
+                        <p-button label="Biomatric" icon="fa-solid fa-fingerprint"
+                        [loading]="loading" 
+                        (onClick)="webAuthRegister()" styleClass="w-5 my-5" />
+                    </div>
+                </div>
+                <p-button label="Submit" (onClick)="onSubmit()" [fluid]="false"></p-button>
+                <p-toast></p-toast>
+            </div>
+        </div>
+    </form>
+</p-fluid>

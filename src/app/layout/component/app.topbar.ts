@@ -1,15 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
+import { Menu, MenuModule } from 'primeng/menu';
+import { ButtonModule } from 'primeng/button';
+import { Avatar } from 'primeng/avatar';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
+    imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator, Menu, ButtonModule, Avatar],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -58,33 +61,123 @@ import { LayoutService } from '../service/layout.service';
                 </div>
             </div>
 
-            <button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
-                <i class="pi pi-ellipsis-v"></i>
+            <button type="button" class="p-2 layout-topbar-action" (click)="menu.toggle($event)">
+                <!-- User Icon (visible only on medium screens and above) -->
+                <i class="pi pi-user text-xl user-icon" style="font-size: 1.25rem;"></i>
+
+                <!-- Ellipsis Icon (visible only on small screens) -->
+                <i class="pi pi-ellipsis-v text-xl ellipsis-icon" style="font-size: 1.25rem;"></i>
             </button>
 
-            <div class="layout-topbar-menu hidden lg:block">
-                <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
+            <style>
+                /* Hide user icon by default (on small screens) */
+            .user-icon {
+            display: none;
+            }
+
+            /* Show user icon on medium and above screens (≥768px) */
+            @media (min-width: 768px) {
+            .user-icon {
+                display: inline-block;
+            }
+            }
+
+            /* Hide ellipsis icon on medium and above screens (≥768px) */
+            .ellipsis-icon {
+            display: inline-block;
+            }
+
+            /* Hide ellipsis icon on small screens */
+            @media (min-width: 768px) {
+            .ellipsis-icon {
+                display: none;
+            }
+            }
+            </style>
+
+            <p-menu #menu [popup]="true" [model]="items" class="flex justify-center" styleClass="w-full md:w-60">
+                <ng-template #start>
+                    <span class="inline-flex items-center gap-1 px-2 py-2">
+                        <span class="text-xl font-semibold">
+                            {{currentLoginUserDetails.employeeEmail}}
+                        </span>
+                    </span>
+                </ng-template>
+                <ng-template #submenuheader let-item>
+                    <span class="text-primary font-bold">{{ item.label }}</span>
+                </ng-template>
+                <ng-template #item let-item>
+                    <a pRipple class="flex items-center p-menu-item-link">
+                        <span [class]="item.icon"></span>
+                        <span class="ml-2">{{ item.label }}</span>
+                        <span *ngIf="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
+                            {{ item.shortcut }}
+                        </span>
+                    </a>
+                </ng-template>
+                <ng-template #end>
+                    <button pRipple class="relative overflow-hidden w-full border-0 bg-transparent flex items-start p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
+                        <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" class="mr-2" shape="circle" />
+                        <span class="inline-flex flex-col">
+                            <span class="font-bold">{{currentLoginUserDetails.employeeUsername}}</span>
+                            <span class="text-sm text-start">{{currentLoginUserDetails.employeeRole}}</span>
+                        </span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
-                </div>
-            </div>
+                </ng-template>
+            </p-menu>
         </div>
     </div>`
 })
-export class AppTopbar {
+export class AppTopbar implements OnInit{
     items!: MenuItem[];
+    menu!: Menu;
+    currentLoginUserDetails: any;
 
-    constructor(public layoutService: LayoutService) {}
+    constructor(public layoutService: LayoutService) {
+        this.currentLoginUserDetails = JSON.parse(localStorage.getItem('CurrentLoginUserDetails') || '{}');
+        console.log(this.currentLoginUserDetails);
+    }
+
+    ngOnInit() {
+        this.items = [
+            {
+                separator: true
+            },
+            {
+                label: 'Profile',
+                items: [
+                    {
+                        label: 'Settings',
+                        icon: 'pi pi-cog',
+                        shortcut: '⌘+O'
+                    },
+                    {
+                        label: 'Messages',
+                        icon: 'pi pi-inbox',
+                        badge: '2'
+                    },
+                    {
+                        label: 'Logout',
+                        icon: 'pi pi-sign-out',
+                        shortcut: '⌘+Q',
+                        command: () => {
+                            this.signOut();
+                        }
+                    }
+                ]
+            },
+            {
+                separator: true
+            }
+        ];
+    }
+
+
+
+    signOut() {
+        alert('signOuted'); 
+    }
+
 
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));

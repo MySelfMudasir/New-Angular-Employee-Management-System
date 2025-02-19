@@ -89,7 +89,22 @@ export class AppMenu {
                         label: 'Empty',
                         icon: 'pi pi-fw pi-circle-off',
                         routerLink: ['/pages/empty']
-                    }
+                    },
+                    {
+                        label: 'Add Employee',
+                        icon: 'pi pi-fw pi-user-plus',
+                        routerLink: ['/pages/add-employee'],
+                    },
+                    {
+                        label: 'View Employee',
+                        icon: 'pi pi-fw pi-eye',
+                        routerLink: ['/pages/view-employee'],
+                    },
+                    {
+                        label: 'Employee Attendence',
+                        icon: 'pi pi-fw pi-file',
+                        routerLink: ['/pages/employee-attendence'],
+                    },
                 ]
             },
             {

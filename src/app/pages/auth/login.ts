@@ -1,17 +1,23 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ApiService } from '../../services/api.service';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator],
+    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator,
+        ReactiveFormsModule, FormsModule,
+        ToastModule,
+    ],
     template: `
         <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
@@ -41,26 +47,31 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                         </div>
 
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" [(ngModel)]="email" />
+                            <form action="" [formGroup]="loginForm">
+                                <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Usrename</label>
+                                <input pInputText id="email1" type="text" formControlName="username" name="username" placeholder="Username"  class="w-full md:w-[30rem] mb-8" />
 
-                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                            <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
+                                <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
+                                <p-password id="password1" formControlName="password" name="password" placeholder="Password"  [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
-                            <div class="flex items-center justify-between mt-2 mb-8 gap-8">
-                                <div class="flex items-center">
-                                    <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
-                                    <label for="rememberme1">Remember me</label>
+                                <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                                    <div class="flex items-center">
+                                        <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
+                                        <label for="rememberme1">Remember me</label>
+                                    </div>
+                                    <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                                 </div>
-                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
-                            </div>
-                            <p-button label="Sign In" styleClass="w-full" routerLink="/"></p-button>
+                                <p-button label="Sign In" (click)="onSubmit()" styleClass="w-full"></p-button>
+                                <p-toast></p-toast>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    `
+    `,
+    providers: [MessageService]
+
 })
 export class Login {
     email: string = '';
@@ -68,4 +79,61 @@ export class Login {
     password: string = '';
 
     checked: boolean = false;
+
+
+    constructor(public router:Router, private messageService: MessageService) { }
+    apiService = inject(ApiService);
+
+
+    loginForm: FormGroup = new FormGroup({
+        username: new FormControl('mudasir.maqbool'),
+        password: new FormControl('mudasir123')
+    })
+    
+    
+    onSubmit() {
+        if (this.loginForm.valid) {
+            // Handle form submission
+            console.log('Form Submitted', this.loginForm.value);
+            this.validateUser();
+        }
+        else {
+            console.log('Form Invalid');
+        }
+    }
+
+
+
+
+    validateUser() {
+        this.apiService.validateUser(this.loginForm.value).subscribe(
+            (response) => {
+                console.log('User Validated', response);
+                if (response.status == 200) {
+                    const CurrentLoginUserPayload = {
+                        employeeId: response.employeeId,
+                        employeeUsername: response.employeeUsername,
+                        employeeEmail: response.employeeEmail,
+                        employeeRole: response.employeeRole,
+                        token: response.token
+                    }
+                    // Save user details in local storage
+                    localStorage.setItem('CurrentLoginUserDetails', JSON.stringify(CurrentLoginUserPayload));
+                    this.router.navigate(['/pages/add-employee']);
+                }
+            },
+            (error) => {
+                if (error.status === 404) {
+                    // Handle "User not found" case
+                    this.messageService.add({ severity: 'error', summary: 'Failed', detail: 'Invalid User' });
+                    console.log('Invalid User');
+                } else {
+                    // Handle other server errors
+                    this.messageService.add({ severity: 'error', summary: 'Failed', detail: 'Server Error' });
+                    console.log('Server Error:', error);
+                }
+            }
+        );
+    }
+
 }
