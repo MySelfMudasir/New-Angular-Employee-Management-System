@@ -1,3 +1,4 @@
+const { booleanAttribute } = require('@angular/core');
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -27,9 +28,35 @@ const employeeSchema = new mongoose.Schema({
 });
 
 
+const passkeySchema = new mongoose.Schema({
+  employeeid: { type: String, required: true, unique: true },
+  fmt: { type: String, required: true },
+  counter: { type: String, required: true },
+  aaguid: { type: String, required: true },
+  credentialID: { type: String, required: true },
+  credentialPublicKey: { type: Object, required: true },
+  credentialType: { type: String, required: true },
+  attestationObject: { type: Object, required: true },
+  userVerified: { type: String, required: true },
+  credentialDeviceType: { type: String, required: true },
+  credentialBackedUp: { type: String, required: true },
+  origin: { type: String, required: true },
+  rpID: { type: String, required: true },
+});
 
+
+
+const attendenceschema = new mongoose.Schema({
+  employeeid: { type: String, required: true },
+  username: { type: String, required: true},
+  email: { type: String, required: true },
+  coming: {type: Date, required: false},
+  outgoing: {type: Date, required: false},
+  biomarticVarificationCheckout: {type: Boolean, required: true},
+})
 
 const User = mongoose.model('User', userSchema);
 const Employee = mongoose.model('Employee', employeeSchema);
-
-module.exports = { User, Employee };
+const Passkeys = mongoose.model('passkeys', passkeySchema)
+const Attendence = mongoose.model('Attendence', attendenceschema)
+module.exports = { User, Employee, Passkeys, Attendence };

@@ -6,7 +6,7 @@ const multer = require("multer");
 const cors = require("cors");
 const path = require("path");
 const MySchema = require('./models/model');  // Import the User model
-// const authenticateUser = require('./webauth'); // Include webauth.js
+const authenticateUser = require('./webauth'); // Include webauth.js
 
 
 const { log } = require('@angular-devkit/build-angular/src/builders/ssr-dev-server');
@@ -131,7 +131,6 @@ app.post('/users/add-user', checkDuplication, async(req, res) => {
     // const employeeid = `employee_${Date.now()}`;
     const { username, email, password } = req.body;
 
-
     const existingEmployee = await MySchema.Employee.findOne({
       $or: [
       { username: username },
@@ -226,7 +225,13 @@ MySchema.User.findOne({ username, password })
 // API to add an employee with an image
 app.post('/employee/add-employee', upload.single('image'), async (req, res) => {  
   try {
-      const { employeeid, username, firstname, lastname, email, phone, address, state, city, zipcode, role } = req.body;
+
+      var { employeeid, username, firstname, lastname, email, phone, address, state, city, zipcode, role, passkey } = req.body;
+
+      // Parse the passkey JSON string back into an object
+      const passkeyData = JSON.parse(passkey);
+
+      // console.log('Request body:', req.body);
 
       // Check for duplicate email or employeeid
       const existingEmployee = await MySchema.Employee.findOne({
@@ -244,25 +249,17 @@ app.post('/employee/add-employee', upload.single('image'), async (req, res) => {
       }
 
       const image = req.file ? req.file.path : null;
-      const newEmployee = new MySchema.Employee({
-          employeeid,
-          username, 
-          firstname,
-          lastname,
-          email,
-          phone,
-          address,
-          state,
-          city,
-          zipcode,
-          role,
-          image,
-      });
+      const newEmployee = new MySchema.Employee({ employeeid, username,  firstname, lastname, email, phone, address, state, city, zipcode, role, image});
       await newEmployee.save();
+      var {employeeid, fmt, counter, aaguid, credentialID, credentialPublicKey, credentialType, attestationObject, userVerified, credentialDeviceType, credentialBackedUp, origin, rpID } = passkeyData;
+
+      const newPasskey = new MySchema.Passkeys({employeeid, fmt, counter, aaguid, credentialID, credentialPublicKey, credentialType, attestationObject, userVerified, credentialDeviceType, credentialBackedUp, origin, rpID });
+      await newPasskey.save();
       res.status(201).json({
-          message: 'Employee added successfully',
+          message: 'Employee and Passkey added successfully',
           status: 201,
-          employee: newEmployee
+          employee: newEmployee,
+          passkey: newPasskey
       });
   } catch (err) {
       console.error('Error:', err);
@@ -403,6 +400,94 @@ app.delete('/employee/delete-employee/:id', (req, res) => {
       });
     });
 });
+
+
+
+// Middleware to check the difference between coming and outgoing time
+const checkWorkingTime = async (req, res, next) => {
+  const { employeeid } = req.body;
+
+  try {
+    // Find existing attendance for the employee today
+    const existingAttendance = await MySchema.Attendence.findOne({
+      employeeid,
+      coming: { $gte: new Date().setHours(0, 0, 0, 0), $lt: new Date().setHours(23, 59, 59, 999) }
+    });
+
+    if (existingAttendance) {
+      const comingTime = new Date(existingAttendance.coming); // Existing coming time
+      const currentTime = new Date(); // Current time
+
+      // Calculate the time difference in seconds
+      const timeDiffInSeconds = (currentTime - comingTime) / 1000;
+
+      // If the time difference is less than 10 seconds, return an error
+      if (timeDiffInSeconds < 10) {
+        return res.status(409).json({
+          message: 'Cannot mark outgoing attendance before completing 10 seconds of working time',
+          status: '409',
+          attendance: existingAttendance
+        });
+      }
+
+      // If the time difference is sufficient, proceed with marking outgoing
+      req.existingAttendance = existingAttendance;
+      return next();
+    }
+
+    // If no existing attendance, proceed to the next middleware or route
+    next();
+
+  } catch (err) {
+    res.status(500).json({
+      message: 'Failed to check working time',
+      status: '500',
+      error: err
+    });
+  }
+};
+
+
+// employee-attendence
+app.post('/employee/attendence', checkWorkingTime, async (req, res) => {
+
+  try {
+    const { employeeid, username, email, biomarticVarificationCheckout } = req.body;
+
+    // If there's existing attendance, update the outgoing time
+    if (req.existingAttendance) {
+      const currentTime = new Date(); // Get the current time as a full Date object
+      req.existingAttendance.outgoing = currentTime; // Assign the Date object to outgoing
+      await req.existingAttendance.save();
+
+      return res.status(200).json({
+        message: 'Outgoing attendance marked successfully',
+        status: '200',
+        attendance: req.existingAttendance
+      });
+    }
+
+    // If there's no existing attendance, mark coming attendance
+    const coming = new Date(); // Current time for coming
+    const newAttendance = new MySchema.Attendence({ employeeid, username, email, coming, biomarticVarificationCheckout });
+    await newAttendance.save();
+
+    res.status(201).json({
+      message: 'Employee coming attendance marked successfully',
+      status: '201',
+      attendance: newAttendance
+    });
+
+  } catch (err) {
+    console.error('Error marking attendance:', err);
+    res.status(500).json({
+      message: 'Failed to mark attendance',
+      status: '500',
+      error: err
+    });
+  }
+});
+
 
 
 

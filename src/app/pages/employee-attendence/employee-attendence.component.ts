@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -35,23 +35,18 @@ export class EmployeeAttendenceComponent {
     private timer: any;
     private timerSuccesss: any;
     employeeId: any;
-    CurrentLoginEmployeeId: any;
+    CurrentLoginUserDetails: any;
 
 
     constructor(public router:Router, public layoutService: LayoutService, private messageService: MessageService) { }
     apiService = inject(ApiService);
 
 
-    addEmployeeForm: FormGroup = new FormGroup({
-        firstname: new FormControl('mudasir'),
-        lastname: new FormControl('maqbool'),
-        email: new FormControl('mudasir@gmail.com'),
-        phone: new FormControl('030000000'),
-        address: new FormControl('BWN'),
-        state: new FormControl('Arizona'),
-        city: new FormControl('BWN'),
-        zipcode: new FormControl('62300'),
-        role: new FormControl('user'),
+    employeeAttendenceForm: FormGroup = new FormGroup({
+        employeeid: new FormControl('', [Validators.required]),
+        username: new FormControl('mudasir', [Validators.required]),
+        email: new FormControl('mudasir@gmail.com', [Validators.required]),
+        biomarticVarificationCheckout: new FormControl('', [Validators.required]),
     })
 
 
@@ -59,9 +54,9 @@ export class EmployeeAttendenceComponent {
       
     ngOnInit(): void {
       this.addEventListeners();
-      this.CurrentLoginEmployeeId = localStorage.getItem('CurrentLoginUserDetails');
-      this.employeeId = this.CurrentLoginEmployeeId;
-
+      this.CurrentLoginUserDetails = JSON.parse(localStorage.getItem('CurrentLoginUserDetails') || '{}');
+      console.log(this.CurrentLoginUserDetails);
+      this.employeeId = this.CurrentLoginUserDetails.employeeId;
     }
   
     ngOnDestroy(): void {
@@ -128,13 +123,23 @@ export class EmployeeAttendenceComponent {
 
 
     onSubmit() {
-        if (this.addEmployeeForm.valid) {
-            console.log('Form Submitted');
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Form Submitted' });
-        } else {
-            console.log('Form Invalid');
-            this.messageService.add({ severity: 'danger', summary: 'Failed', detail: 'Form Invalid' });
-        }
+      if (this.employeeAttendenceForm.valid) {
+          console.log('Form Submitted');
+            this.apiService.employeeAttendence(this.employeeAttendenceForm.value).subscribe((response) => {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: response.message});
+          },
+          (error) => {
+          console.log('Error:', error.error.message);
+          this.messageService.add({ severity: 'error', summary: 'Failed', detail: error.error.message});
+        })
+      } 
+      else if (this.employeeAttendenceForm.value.biomarticVarificationCheckout == '') {
+        this.messageService.add({ severity: 'error', summary: 'Failed', detail: 'Biomartic Varification Failed' });
+      }
+      else {
+        console.log('Form Invalid');
+        this.messageService.add({ severity: 'error', summary: 'Failed', detail: 'Attendence Failed' });
+      }
     }
 
 
@@ -151,6 +156,9 @@ export class EmployeeAttendenceComponent {
             if(result.user.passkey.userVerified) {
               this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Fingerprint Recognized Successfully' });
               this.timer = setTimeout(this.onSuccess.bind(this), 0);
+              this.employeeAttendenceForm.patchValue({ employeeid: result.user.employeeid });
+              this.employeeAttendenceForm.patchValue({ biomarticVarificationCheckout: true });
+
             }
           });
         }).catch(error => {

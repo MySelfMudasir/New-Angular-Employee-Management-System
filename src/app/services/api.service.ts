@@ -38,12 +38,17 @@ export class ApiService {
     formData.append('city', data.city);
     formData.append('zipcode', data.zipcode);
     formData.append('role', data.role);
+    // Serialize the passkey object to a JSON string
+    formData.append('passkey', JSON.stringify(data.passkey));
+  
     if (file) {
-        formData.append('image', file); // Append the image file
+      formData.append('image', file); // Append the image file
     }
-
-    return this.http.post<any>(`${this.apiUrl}/employee/add-employee`, formData);
-}
+    
+    return this.http.post<any>(`${this.apiUrl}/employee/add-employee`, formData, {
+      headers: { 'enctype': 'multipart/form-data' }
+    });
+  }
 
 
   viewEmployee(): Observable<any> {
@@ -78,6 +83,9 @@ export class ApiService {
 
 
 
+  employeeAttendence(data: any): Observable<any> {    
+    return this.http.post<any>(`${this.apiUrl}/employee/attendence`, data)
+  }
 
 
 // ===============================================================================================================

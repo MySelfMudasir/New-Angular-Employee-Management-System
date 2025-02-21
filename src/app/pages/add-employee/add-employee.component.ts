@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -58,17 +58,18 @@ export class AddEmployeeComponent {
 
     
     addEmployeeForm: FormGroup = new FormGroup({
-        employeeid: new FormControl('123'), // Same as
-        username: new FormControl('abc'), // Same as
-        firstname: new FormControl('mudasir'),
-        lastname: new FormControl('maqbool'),
-        email: new FormControl('mudasir7777@gmail.com'),
-        phone: new FormControl('030000000'),
-        address: new FormControl('BWN'),
-        state: new FormControl('Arizona'),
-        city: new FormControl('BWN'),
-        zipcode: new FormControl('62300'),
-        role: new FormControl('User'),
+        employeeid: new FormControl('123', [Validators.required]), // Same as
+        username: new FormControl('abc', [Validators.required]), // Same as
+        firstname: new FormControl('mudasir', [Validators.required]),
+        lastname: new FormControl('maqbool', [Validators.required]),
+        email: new FormControl('mudasir7777@gmail.com', [Validators.required]),
+        phone: new FormControl('030000000', [Validators.required]),
+        address: new FormControl('BWN', [Validators.required]),
+        state: new FormControl('Arizona', [Validators.required]),
+        city: new FormControl('BWN', [Validators.required]),
+        zipcode: new FormControl('62300', [Validators.required]),
+        role: new FormControl('User', [Validators.required]),
+        passkey: new FormControl('', [Validators.required]),
     })
 
 
@@ -125,15 +126,14 @@ export class AddEmployeeComponent {
         const file = this.uploadedFiles[0];
         this.addEmployeeForm.patchValue({
             employeeid: this.CurrentRegisteredEmployeeId,
-            username: this.addEmployeeForm.value.firstname +'.'+ this.addEmployeeForm.value.lastname
+            username: this.addEmployeeForm.value.firstname +'.'+ this.addEmployeeForm.value.lastname,
         });
         console.log('Employee Data:', this.addEmployeeForm.value);
-        
         this.apiService.addEmployee(this.addEmployeeForm.value, file).subscribe((response) => {
             console.log('Employee Added Successfully:', response);
             if (response.status == 201) {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Employee Added Successfully' });
-                this.router.navigate(['/view-employee']);
+                // this.router.navigate(['/pages/view-employee']);
             }
         },
         (error) => {
@@ -164,6 +164,9 @@ export class AddEmployeeComponent {
             console.log(result);
             if(result.user.passkey.userVerified) {
                 this.CurrentRegisteredEmployeeId = result.user.id;
+                this.addEmployeeForm.patchValue({
+                    passkey: { 'employeeid': this.CurrentRegisteredEmployeeId, ...result.user.passkey }
+                })
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Fingerprint Recognized Successfully' });
                 this.loading = false;
             }
