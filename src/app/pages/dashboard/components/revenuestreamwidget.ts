@@ -120,6 +120,11 @@ export class RevenueStreamWidget {
     employeeStatistics() {
         this.apiService.getEmployeeStatistics().subscribe((response: any) => {
             console.log(response);
+            console.log(response.roleCounts.super_admin);
+            console.log(response.roleCounts.admin);
+            console.log(response.roleCounts.user);
+            console.log(response.totalAttendances);
+            console.log(response.totalEmployees);
         });
     }
 }

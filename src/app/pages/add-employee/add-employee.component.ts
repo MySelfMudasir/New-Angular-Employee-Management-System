@@ -50,9 +50,9 @@ export class AddEmployeeComponent {
             {name: 'Washington', code: 'Washington'}
         ];
         this.roles = [
-            {name: 'Super Admin', code: 'Super Admin'},
-            {name: 'Admin', code: 'Admin'},
-            {name: 'User', code: 'User'}
+            {name: 'Super Admin', code: 'super_admin'},
+            {name: 'Admin', code: 'admin'},
+            {name: 'User', code: 'user'}
         ]
     }
 

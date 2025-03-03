@@ -501,11 +501,22 @@ app.get('/employee/statistics', async (req, res) => {
       coming: { $gte: today, $lt: tomorrow }
     });
 
+    const roleCounts = await MySchema.Employee.aggregate([
+      { $match: { is_deleted: 0 } },
+      { $group: { _id: "$role", count: { $sum: 1 } } }
+    ]);
+
+    const roleCountMap = roleCounts.reduce((acc, role) => {
+      acc[role._id] = role.count;
+      return acc;
+    }, {});
+
     res.status(200).json({
       message: 'Statistics retrieved successfully',
       status: '200',
       totalEmployees: totalEmployees,
-      totalAttendances: totalAttendances
+      totalAttendances: totalAttendances,
+      roleCounts: roleCountMap
     });
 
   } catch (err) {
