@@ -1,24 +1,48 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { StateService } from '../../services/state.service';
 
 @Component({
     selector: 'app-menu',
     standalone: true,
     imports: [CommonModule, AppMenuitem, RouterModule],
-    template: `<ul class="layout-menu">
-        <ng-container *ngFor="let item of model; let i = index">
-            <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
-            <li *ngIf="item.separator" class="menu-separator"></li>
-        </ng-container>
-    </ul> `
+    template: `
+        <ul class="layout-menu">
+            <ng-container *ngFor="let item of model; let i = index">
+                <li 
+                    app-menuitem
+                    
+                    [item]="item" 
+                    [index]="i" 
+                    [root]="true">
+                </li>
+                <li *ngIf="item.separator" class="menu-separator"></li>
+            </ng-container>
+        </ul>
+    `,
+    styles: [
+        `
+        .hidden {
+            display: none !important; /* Hide items when this class is applied */
+        }
+        `
+    ]
 })
 export class AppMenu {
     model: MenuItem[] = [];
+    CurrentLoginUserDetails: any;
 
+    
+    stateService = inject(StateService);
+    
+    
     ngOnInit() {
+
+        this.CurrentLoginUserDetails = this.stateService.getCurrentLoginUserDetails();
+
         this.model = [
             {
                 label: 'Home',
@@ -90,6 +114,13 @@ export class AppMenu {
                         icon: 'pi pi-fw pi-circle-off',
                         routerLink: ['/pages/empty']
                     },
+                ]
+            },
+            {
+                label: 'Admin',
+                icon: 'pi pi-fw pi-briefcase',
+                routerLink: ['/pages'],
+                items: [
                     {
                         label: 'Add Employee',
                         icon: 'pi pi-fw pi-user-plus',
@@ -100,6 +131,13 @@ export class AppMenu {
                         icon: 'pi pi-fw pi-eye',
                         routerLink: ['/pages/view-employee'],
                     },
+                ]
+            },
+            {
+                label: 'User',
+                icon: 'pi pi-fw pi-briefcase',
+                routerLink: ['/pages'],
+                items: [
                     {
                         label: 'Employee Attendence',
                         icon: 'pi pi-fw pi-file',
@@ -168,5 +206,20 @@ export class AppMenu {
                 ]
             }
         ];
+    }
+
+
+
+    isItemHidden(item: MenuItem): boolean {
+        const userRole = this.CurrentLoginUserDetails.employeeRole;
+
+        if (userRole === 'admin') {
+            // Show admin-related items, hide others
+            return item.label !== 'Admin';
+        } else if (userRole === 'user') {
+            // Show user-related items, hide others
+            return item.label !== 'User';
+        }
+        return false; // Show all by default
     }
 }

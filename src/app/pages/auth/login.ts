@@ -10,6 +10,7 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
+import { StateService } from '../../services/state.service';
 
 @Component({
     selector: 'app-login',
@@ -83,6 +84,7 @@ export class Login {
 
     constructor(public router:Router, private messageService: MessageService) { }
     apiService = inject(ApiService);
+    stateService = inject(StateService);
 
 
     loginForm: FormGroup = new FormGroup({
@@ -117,8 +119,8 @@ export class Login {
                         employeeRole: response.employeeRole,
                         token: response.token
                     }
-                    // Save user details in local storage
-                    localStorage.setItem('CurrentLoginUserDetails', JSON.stringify(CurrentLoginUserPayload));
+                    // Set user details in state service
+                    this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
                     this.router.navigate(['/pages/add-employee']);
                 }
             },

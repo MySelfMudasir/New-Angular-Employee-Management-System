@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { debounceTime, Subscription } from 'rxjs';
 import { LayoutService } from '../../../layout/service/layout.service';
+import { ApiService } from '../../../services/api.service';
 
 @Component({
     standalone: true,
     selector: 'app-revenue-stream-widget',
     imports: [ChartModule],
     template: `<div class="card !mb-8">
-        <div class="font-semibold text-xl mb-4">Revenue Stream</div>
+        <div class="font-semibold text-xl mb-4">Employees Statistics</div>
         <p-chart type="bar" [data]="chartData" [options]="chartOptions" class="h-80" />
     </div>`
 })
@@ -19,6 +20,8 @@ export class RevenueStreamWidget {
 
     subscription!: Subscription;
 
+    apiService = inject(ApiService);
+
     constructor(public layoutService: LayoutService) {
         this.subscription = this.layoutService.configUpdate$.pipe(debounceTime(25)).subscribe(() => {
             this.initChart();
@@ -27,6 +30,7 @@ export class RevenueStreamWidget {
 
     ngOnInit() {
         this.initChart();
+        this.employeeStatistics();
     }
 
     initChart() {
@@ -36,26 +40,26 @@ export class RevenueStreamWidget {
         const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
 
         this.chartData = {
-            labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+            labels: ['Super Admin', 'Admin', 'Employee'],
             datasets: [
                 {
                     type: 'bar',
-                    label: 'Subscriptions',
-                    backgroundColor: documentStyle.getPropertyValue('--p-primary-400'),
-                    data: [4000, 10000, 15000, 4000],
+                    label: 'Total',
+                    backgroundColor: '#8b5cf6',
+                    data: [4000, 10000, 15000, 400],
                     barThickness: 32
                 },
                 {
                     type: 'bar',
-                    label: 'Advertising',
-                    backgroundColor: documentStyle.getPropertyValue('--p-primary-300'),
+                    label: 'Present',
+                    backgroundColor: '#22C55E',
                     data: [2100, 8400, 2400, 7500],
                     barThickness: 32
                 },
                 {
                     type: 'bar',
-                    label: 'Affiliate',
-                    backgroundColor: documentStyle.getPropertyValue('--p-primary-200'),
+                    label: 'Leave',
+                    backgroundColor: '#f43f5e',
                     data: [4100, 5200, 3400, 7400],
                     borderRadius: {
                         topLeft: 8,
@@ -109,5 +113,13 @@ export class RevenueStreamWidget {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
+    }
+
+
+
+    employeeStatistics() {
+        this.apiService.getEmployeeStatistics().subscribe((response: any) => {
+            console.log(response);
+        });
     }
 }

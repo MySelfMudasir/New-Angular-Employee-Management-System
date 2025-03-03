@@ -36,8 +36,8 @@ import { Avatar } from 'primeng/avatar';
                         />
                     </g>
                 </svg>
-                <span>SAKAI</span>
             </a>
+            <span class="layout-topbar-title">Employee Management System</span>
         </div>
 
         <div class="layout-topbar-actions">
@@ -74,6 +74,19 @@ import { Avatar } from 'primeng/avatar';
             .user-icon {
             display: none;
             }
+            
+
+            /* .p-menu-item-link span:nth-child(1) {
+                color: red;
+            } */
+
+
+            .p-menu-item-link-start {
+                color: red;
+            }
+
+
+
 
             /* Show user icon on medium and above screens (≥768px) */
             @media (min-width: 768px) {
@@ -108,8 +121,8 @@ import { Avatar } from 'primeng/avatar';
                 </ng-template>
                 <ng-template #item let-item>
                     <a pRipple class="flex items-center p-menu-item-link">
-                        <span [class]="item.icon"></span>
-                        <span class="ml-2">{{ item.label }}</span>
+                    <span [ngClass]="[item.icon, item.class]"></span>
+                        <span class="ml-2" [ngClass]="[item.class]">{{ item.label }}</span>
                         <span *ngIf="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
                             {{ item.shortcut }}
                         </span>
@@ -135,7 +148,6 @@ export class AppTopbar implements OnInit{
 
     constructor(public layoutService: LayoutService) {
         this.currentLoginUserDetails = JSON.parse(localStorage.getItem('CurrentLoginUserDetails') || '{}');
-        console.log(this.currentLoginUserDetails);
     }
 
     ngOnInit() {
@@ -149,16 +161,19 @@ export class AppTopbar implements OnInit{
                     {
                         label: 'Settings',
                         icon: 'pi pi-cog',
+                        class: '',
                         shortcut: '⌘+O'
                     },
                     {
                         label: 'Messages',
                         icon: 'pi pi-inbox',
+                        class: '',
                         badge: '2'
                     },
                     {
                         label: 'Logout',
                         icon: 'pi pi-sign-out',
+                        class: 'p-menu-item-link-start',
                         shortcut: '⌘+Q',
                         command: () => {
                             this.signOut();

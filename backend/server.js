@@ -6,7 +6,7 @@ const multer = require("multer");
 const cors = require("cors");
 const path = require("path");
 const MySchema = require('./models/model');  // Import the User model
-const authenticateUser = require('./webauth'); // Include webauth.js
+const authenticateUser = require('./fingerprintAuth'); // Include webauth.js
 
 
 const { log } = require('@angular-devkit/build-angular/src/builders/ssr-dev-server');
@@ -488,6 +488,35 @@ app.post('/employee/attendence', checkWorkingTime, async (req, res) => {
   }
 });
 
+
+
+// employee-statistics
+app.get('/employee/statistics', async (req, res) => {
+  try {
+    const today = new Date().setHours(0, 0, 0, 0); // Start of today
+    const tomorrow = new Date().setHours(23, 59, 59, 999); // End of today
+
+    const totalEmployees = await MySchema.Employee.countDocuments();
+    const totalAttendances = await MySchema.Attendence.countDocuments({
+      coming: { $gte: today, $lt: tomorrow }
+    });
+
+    res.status(200).json({
+      message: 'Statistics retrieved successfully',
+      status: '200',
+      totalEmployees: totalEmployees,
+      totalAttendances: totalAttendances
+    });
+
+  } catch (err) {
+    console.error('Error retrieving statistics:', err);
+    res.status(500).json({
+      message: 'Failed to retrieve statistics',
+      status: '500',
+      error: err
+    });
+  }
+});
 
 
 

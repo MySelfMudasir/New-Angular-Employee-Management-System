@@ -68,7 +68,7 @@ export class AddEmployeeComponent {
         state: new FormControl('Arizona', [Validators.required]),
         city: new FormControl('BWN', [Validators.required]),
         zipcode: new FormControl('62300', [Validators.required]),
-        role: new FormControl('User', [Validators.required]),
+        role: new FormControl('user', [Validators.required]),
         passkey: new FormControl('', [Validators.required]),
     })
 
