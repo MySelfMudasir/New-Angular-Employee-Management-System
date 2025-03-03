@@ -67,7 +67,7 @@ import { ApiService } from '../../services/api.service';
                                     </div>
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                                 </div>
-                                <p-button label="Sign Up" (click)="onSubmit()" styleClass="w-full"></p-button>
+                                <p-button label="Sign Up" type="submit" (click)="onSubmit()" styleClass="w-full"></p-button>
                                 <p-toast></p-toast>
                             </form>
                         </div>

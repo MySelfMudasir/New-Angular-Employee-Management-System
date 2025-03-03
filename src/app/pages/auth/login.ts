@@ -62,7 +62,7 @@ import { StateService } from '../../services/state.service';
                                     </div>
                                     <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                                 </div>
-                                <p-button label="Sign In" (click)="onSubmit()" styleClass="w-full"></p-button>
+                                <p-button label="Sign In" type="submit" (click)="onSubmit()" styleClass="w-full"></p-button>
                                 <p-toast></p-toast>
                             </form>
                         </div>
@@ -111,7 +111,7 @@ export class Login {
         this.apiService.validateUser(this.loginForm.value).subscribe(
             (response) => {
                 console.log('User Validated', response);
-                if (response.status == 200) {
+                if (response.status == 200 && response.employeeRole == "super_admin") {
                     const CurrentLoginUserPayload = {
                         employeeId: response.employeeId,
                         employeeUsername: response.employeeUsername,
@@ -122,6 +122,30 @@ export class Login {
                     // Set user details in state service
                     this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
                     this.router.navigate(['/pages/add-employee']);
+                }
+                if (response.status == 200 && response.employeeRole == "admin") {
+                    const CurrentLoginUserPayload = {
+                        employeeId: response.employeeId,
+                        employeeUsername: response.employeeUsername,
+                        employeeEmail: response.employeeEmail,
+                        employeeRole: response.employeeRole,
+                        token: response.token
+                    }
+                    // Set user details in state service
+                    this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
+                    this.router.navigate(['/pages/add-employee']);
+                }
+                if (response.status == 200 && response.employeeRole == "user") {
+                    const CurrentLoginUserPayload = {
+                        employeeId: response.employeeId,
+                        employeeUsername: response.employeeUsername,
+                        employeeEmail: response.employeeEmail,
+                        employeeRole: response.employeeRole,
+                        token: response.token
+                    }
+                    // Set user details in state service
+                    this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
+                    this.router.navigate(['/pages/employee-attendence']);
                 }
             },
             (error) => {

@@ -9,7 +9,7 @@ export const userAuthGuard: CanActivateFn = (route, state) => {
 
 
   const currentLoginUserDetails = stateService.getCurrentLoginUserDetails();
-
+  
 
   if (currentLoginUserDetails.employeeRole === 'user') {
     return true; // Navigation is allowed

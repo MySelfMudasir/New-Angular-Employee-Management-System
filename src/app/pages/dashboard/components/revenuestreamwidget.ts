@@ -15,22 +15,29 @@ import { ApiService } from '../../../services/api.service';
 })
 export class RevenueStreamWidget {
     chartData: any;
-
     chartOptions: any;
+    super_admin: number[] = [];
+    admin: number[] = [];
+    user: number[] = [];
 
     subscription!: Subscription;
-
     apiService = inject(ApiService);
 
     constructor(public layoutService: LayoutService) {
+        this.initChart();
         this.subscription = this.layoutService.configUpdate$.pipe(debounceTime(25)).subscribe(() => {
-            this.initChart();
+            this.initChart
         });
     }
 
     ngOnInit() {
-        this.initChart();
         this.employeeStatistics();
+        console.log('get data');
+        setTimeout(() => {
+            this.updateChart();
+            console.log('update data');
+        }, 3000);
+        
     }
 
     initChart() {
@@ -46,21 +53,21 @@ export class RevenueStreamWidget {
                     type: 'bar',
                     label: 'Total',
                     backgroundColor: '#8b5cf6',
-                    data: [4000, 10000, 15000, 400],
+                    data: [13,23,24],
                     barThickness: 32
                 },
                 {
                     type: 'bar',
                     label: 'Present',
                     backgroundColor: '#22C55E',
-                    data: [2100, 8400, 2400, 7500],
+                    data: this.admin,
                     barThickness: 32
                 },
                 {
                     type: 'bar',
                     label: 'Leave',
                     backgroundColor: '#f43f5e',
-                    data: [4100, 5200, 3400, 7400],
+                    data: this.user,
                     borderRadius: {
                         topLeft: 8,
                         topRight: 8,
@@ -116,15 +123,31 @@ export class RevenueStreamWidget {
     }
 
 
-
     employeeStatistics() {
+
         this.apiService.getEmployeeStatistics().subscribe((response: any) => {
             console.log(response);
-            console.log(response.roleCounts.super_admin);
-            console.log(response.roleCounts.admin);
-            console.log(response.roleCounts.user);
-            console.log(response.totalAttendances);
-            console.log(response.totalEmployees);
+            this.super_admin.push(response.roleCounts.super_admin);
+            this.admin.push(response.roleCounts.admin);
+            this.user.push(response.roleCounts.user);
+            
+            // this.super_admin.push(10, 20);
+            // this.admin.push(10, 20);
+            // this.user.push(10, 20);
+
+            console.log('Super Admin', this.super_admin);
+            
+            console.log('total attendence', response.totalAttendances);
+            console.log('total employee', response.totalEmployees);
         });
     }
+
+
+    updateChart() {
+        this.chartData.datasets[0].data = this.super_admin;
+        this.chartData.datasets[1].data = this.admin;
+        this.chartData.datasets[2].data = this.user;
+    }
+
+
 }

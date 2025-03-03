@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -7,7 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class StateService {
   
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, public router:Router) { }
 
   private CurrentLoginUserDetails = new BehaviorSubject<string>('');
   accountTitle$ = this.CurrentLoginUserDetails.asObservable();
@@ -20,6 +21,11 @@ export class StateService {
     const CurrentLoginUserDetails = localStorage.getItem('CurrentLoginUserDetails') || '';
     const currentLoginUserDetails = JSON.parse(CurrentLoginUserDetails);
     return currentLoginUserDetails;
+  }
+
+  destroyCurrentLoginUserDetails(): void {
+    localStorage.removeItem('CurrentLoginUserDetails');
+    this.router.navigate(['/auth/login']);
   }
 
 

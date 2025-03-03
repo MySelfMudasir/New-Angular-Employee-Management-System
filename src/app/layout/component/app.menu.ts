@@ -216,6 +216,9 @@ export class AppMenu {
         if (userRole === 'admin') {
             // Show admin-related items, hide others
             return item.label !== 'Admin';
+        } else if (userRole === 'super_admin') {
+            // Show user-related items, hide others
+            return item.label !== 'Admin';
         } else if (userRole === 'user') {
             // Show user-related items, hide others
             return item.label !== 'User';

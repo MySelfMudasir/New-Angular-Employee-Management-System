@@ -35,6 +35,10 @@ export class EmployeeAttendenceComponent {
     private timer: any;
     private timerSuccesss: any;
     employeeId: any;
+    username: any;
+    email: any; 
+    employeeAttendenceForm:any;
+    biomarticVarificationCheckout: boolean = false;
     CurrentLoginUserDetails: any;
 
 
@@ -42,21 +46,23 @@ export class EmployeeAttendenceComponent {
     apiService = inject(ApiService);
 
 
-    employeeAttendenceForm: FormGroup = new FormGroup({
-        employeeid: new FormControl('', [Validators.required]),
-        username: new FormControl('mudasir', [Validators.required]),
-        email: new FormControl('mudasir@gmail.com', [Validators.required]),
-        biomarticVarificationCheckout: new FormControl('', [Validators.required]),
-    })
-
 
 
       
-    ngOnInit(): void {
+    ngOnInit(): void { 
       this.addEventListeners();
       this.CurrentLoginUserDetails = JSON.parse(localStorage.getItem('CurrentLoginUserDetails') || '{}');
       console.log(this.CurrentLoginUserDetails);
       this.employeeId = this.CurrentLoginUserDetails.employeeId;
+      this.username = this.CurrentLoginUserDetails.employeeUsername;
+      this.email = this.CurrentLoginUserDetails.employeeEmail;
+
+      this.employeeAttendenceForm = {
+        employeeId: this.employeeId,
+        username: this.username,
+        email: this.email,
+        biomarticVarificationCheckout: false,
+      };
     }
   
     ngOnDestroy(): void {
@@ -123,9 +129,9 @@ export class EmployeeAttendenceComponent {
 
 
     onSubmit() {
-      if (this.employeeAttendenceForm.valid) {
+      if (this.employeeAttendenceForm.biomarticVarificationCheckout == true) {
           console.log('Form Submitted');
-            this.apiService.employeeAttendence(this.employeeAttendenceForm.value).subscribe((response) => {
+            this.apiService.employeeAttendence(this.employeeAttendenceForm).subscribe((response) => {
             this.messageService.add({ severity: 'success', summary: 'Success', detail: response.message});
           },
           (error) => {
@@ -133,7 +139,7 @@ export class EmployeeAttendenceComponent {
           this.messageService.add({ severity: 'error', summary: 'Failed', detail: error.error.message});
         })
       } 
-      else if (this.employeeAttendenceForm.value.biomarticVarificationCheckout == '') {
+      else if (this.employeeAttendenceForm.biomarticVarificationCheckout == false) {
         this.messageService.add({ severity: 'error', summary: 'Failed', detail: 'Biomartic Varification Failed' });
       }
       else {
@@ -156,8 +162,8 @@ export class EmployeeAttendenceComponent {
             if(result.user.passkey.userVerified) {
               this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Fingerprint Recognized Successfully' });
               this.timer = setTimeout(this.onSuccess.bind(this), 0);
-              this.employeeAttendenceForm.patchValue({ employeeid: result.user.employeeid });
-              this.employeeAttendenceForm.patchValue({ biomarticVarificationCheckout: true });
+              this.employeeAttendenceForm.employeeid = result.user.employeeid;
+              this.employeeAttendenceForm.biomarticVarificationCheckout = true;
 
             }
           });
@@ -167,8 +173,8 @@ export class EmployeeAttendenceComponent {
         });
       },
       error => {
-        console.log('Error:', error.error.error);
-        this.messageService.add({ severity: 'error', summary: 'Failed', detail: error.error.error });
+        console.log('Error:', error.error);
+        this.messageService.add({ severity: 'error', summary: 'Failed', detail: error.error.message });
       });
     }
 

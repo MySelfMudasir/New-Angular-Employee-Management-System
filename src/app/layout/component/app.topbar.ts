@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,6 +8,7 @@ import { LayoutService } from '../service/layout.service';
 import { Menu, MenuModule } from 'primeng/menu';
 import { ButtonModule } from 'primeng/button';
 import { Avatar } from 'primeng/avatar';
+import { StateService } from '../../services/state.service';
 
 @Component({
     selector: 'app-topbar',
@@ -146,11 +147,14 @@ export class AppTopbar implements OnInit{
     menu!: Menu;
     currentLoginUserDetails: any;
 
-    constructor(public layoutService: LayoutService) {
-        this.currentLoginUserDetails = JSON.parse(localStorage.getItem('CurrentLoginUserDetails') || '{}');
-    }
-
+    constructor(public layoutService: LayoutService) {}
+    stateService = inject(StateService);
+    
+    
     ngOnInit() {
+
+        this.currentLoginUserDetails = this.stateService.getCurrentLoginUserDetails();
+
         this.items = [
             {
                 separator: true
@@ -190,7 +194,10 @@ export class AppTopbar implements OnInit{
 
 
     signOut() {
-        alert('signOuted'); 
+        if(confirm('Are You Sure: You want to logout?'))
+        {
+            this.currentLoginUserDetails = this.stateService.destroyCurrentLoginUserDetails();
+        }
     }
 
 

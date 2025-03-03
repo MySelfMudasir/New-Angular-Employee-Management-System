@@ -506,7 +506,26 @@ app.get('/employee/statistics', async (req, res) => {
       { $group: { _id: "$role", count: { $sum: 1 } } }
     ]);
 
+    const attendanceRoleCounts = await MySchema.Attendence.aggregate([
+      { $match: { coming: { $gte: today, $lt: tomorrow } } },
+      {
+        $lookup: {
+          from: 'employees',
+          localField: 'employeeid',
+          foreignField: 'employeeid',
+          as: 'employee'
+        }
+      },
+      { $unwind: '$employee' },
+      { $group: { _id: '$employee.role', count: { $sum: 1 } } }
+    ]);
+
     const roleCountMap = roleCounts.reduce((acc, role) => {
+      acc[role._id] = role.count;
+      return acc;
+    }, {});
+
+    const attendanceRoleCountMap = attendanceRoleCounts.reduce((acc, role) => {
       acc[role._id] = role.count;
       return acc;
     }, {});
@@ -516,7 +535,8 @@ app.get('/employee/statistics', async (req, res) => {
       status: '200',
       totalEmployees: totalEmployees,
       totalAttendances: totalAttendances,
-      roleCounts: roleCountMap
+      roleCounts: roleCountMap,
+      attendanceRoleCounts: attendanceRoleCountMap
     });
 
   } catch (err) {
