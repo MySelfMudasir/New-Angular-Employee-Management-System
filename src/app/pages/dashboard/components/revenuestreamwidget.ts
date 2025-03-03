@@ -131,9 +131,9 @@ export class RevenueStreamWidget {
             this.admin.push(response.roleCounts.admin);
             this.user.push(response.roleCounts.user);
             
-            // this.super_admin.push(10, 20);
-            // this.admin.push(10, 20);
-            // this.user.push(10, 20);
+            this.super_admin.push(10, 20);
+            this.admin.push(10, 20);
+            this.user.push(10, 20);
 
             console.log('Super Admin', this.super_admin);
             

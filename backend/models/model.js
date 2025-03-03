@@ -50,6 +50,7 @@ const attendenceschema = new mongoose.Schema({
   employeeid: { type: String, required: true },
   username: { type: String, required: true},
   email: { type: String, required: true },
+  role: { type: String, required: true },
   coming: {type: Date, required: false},
   outgoing: {type: Date, required: false},
   biomarticVarificationCheckout: {type: Boolean, required: true},

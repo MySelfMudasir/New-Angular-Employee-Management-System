@@ -37,6 +37,7 @@ export class EmployeeAttendenceComponent {
     employeeId: any;
     username: any;
     email: any; 
+    role: any; 
     employeeAttendenceForm:any;
     biomarticVarificationCheckout: boolean = false;
     CurrentLoginUserDetails: any;
@@ -56,11 +57,13 @@ export class EmployeeAttendenceComponent {
       this.employeeId = this.CurrentLoginUserDetails.employeeId;
       this.username = this.CurrentLoginUserDetails.employeeUsername;
       this.email = this.CurrentLoginUserDetails.employeeEmail;
+      this.role = this.CurrentLoginUserDetails.employeeRole;
 
       this.employeeAttendenceForm = {
         employeeId: this.employeeId,
         username: this.username,
         email: this.email,
+        role: this.role,
         biomarticVarificationCheckout: false,
       };
     }

@@ -131,6 +131,11 @@ export class AppMenu {
                         icon: 'pi pi-fw pi-eye',
                         routerLink: ['/pages/view-employee'],
                     },
+                    {
+                        label: 'Marke Attendence',
+                        icon: 'pi pi-fw pi-file',
+                        routerLink: ['/pages/employee-attendence'],
+                    },
                 ]
             },
             {
@@ -139,7 +144,7 @@ export class AppMenu {
                 routerLink: ['/pages'],
                 items: [
                     {
-                        label: 'Employee Attendence',
+                        label: 'Marke Attendence',
                         icon: 'pi pi-fw pi-file',
                         routerLink: ['/pages/employee-attendence'],
                     },

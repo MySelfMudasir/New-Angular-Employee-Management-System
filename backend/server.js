@@ -452,7 +452,7 @@ const checkWorkingTime = async (req, res, next) => {
 app.post('/employee/attendence', checkWorkingTime, async (req, res) => {
 
   try {
-    const { employeeid, username, email, biomarticVarificationCheckout } = req.body;
+    const { employeeid, username, email, role, biomarticVarificationCheckout } = req.body;
 
     // If there's existing attendance, update the outgoing time
     if (req.existingAttendance) {
@@ -469,7 +469,7 @@ app.post('/employee/attendence', checkWorkingTime, async (req, res) => {
 
     // If there's no existing attendance, mark coming attendance
     const coming = new Date(); // Current time for coming
-    const newAttendance = new MySchema.Attendence({ employeeid, username, email, coming, biomarticVarificationCheckout });
+    const newAttendance = new MySchema.Attendence({ employeeid, username, email, role, coming, biomarticVarificationCheckout });
     await newAttendance.save();
 
     res.status(201).json({
@@ -496,23 +496,33 @@ app.get('/employee/statistics', async (req, res) => {
     const today = new Date().setHours(0, 0, 0, 0); // Start of today
     const tomorrow = new Date().setHours(23, 59, 59, 999); // End of today
 
+    // Get total number of employees
     const totalEmployees = await MySchema.Employee.countDocuments();
+
+    // Get total number of attendances marked today
     const totalAttendances = await MySchema.Attendence.countDocuments({
       coming: { $gte: today, $lt: tomorrow }
     });
 
+    // Aggregate role counts from Employee collection
     const roleCounts = await MySchema.Employee.aggregate([
       { $match: { is_deleted: 0 } },
       { $group: { _id: "$role", count: { $sum: 1 } } }
     ]);
 
+    // Aggregate attendance counts by role for today
     const attendanceRoleCounts = await MySchema.Attendence.aggregate([
       { $match: { coming: { $gte: today, $lt: tomorrow } } },
+      {
+        $addFields: {
+          employeeid: { $toString: "$employeeid" } // Convert employeeid to string for consistency
+        }
+      },
       {
         $lookup: {
           from: 'employees',
           localField: 'employeeid',
-          foreignField: 'employeeid',
+          foreignField: 'employeeid', // Ensure this matches the field name in Employee
           as: 'employee'
         }
       },
@@ -520,16 +530,22 @@ app.get('/employee/statistics', async (req, res) => {
       { $group: { _id: '$employee.role', count: { $sum: 1 } } }
     ]);
 
+    // Log attendanceRoleCounts to see if it's correctly populated
+    console.log('Attendance by Role:', attendanceRoleCounts);
+
+    // Create a map of role counts (total employees per role)
     const roleCountMap = roleCounts.reduce((acc, role) => {
       acc[role._id] = role.count;
       return acc;
     }, {});
 
+    // Create a map of attendance counts (attendance marked per role for today)
     const attendanceRoleCountMap = attendanceRoleCounts.reduce((acc, role) => {
       acc[role._id] = role.count;
       return acc;
     }, {});
 
+    // Return response with the statistics
     res.status(200).json({
       message: 'Statistics retrieved successfully',
       status: '200',
@@ -548,6 +564,7 @@ app.get('/employee/statistics', async (req, res) => {
     });
   }
 });
+
 
 
 
