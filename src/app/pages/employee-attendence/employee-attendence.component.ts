@@ -162,12 +162,14 @@ export class EmployeeAttendenceComponent {
         SimpleWebAuthnBrowser.startAuthentication(options).then(authenticationResult => {
           this.apiService.webAuthLoginVerify(this.employeeId, authenticationResult).subscribe(result => {
             console.log(result);
-            if(result.user.passkey.userVerified) {
+            if(result.user) {
               this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Fingerprint Recognized Successfully' });
               this.timer = setTimeout(this.onSuccess.bind(this), 0);
               this.employeeAttendenceForm.employeeid = result.user.employeeid;
               this.employeeAttendenceForm.biomarticVarificationCheckout = true;
-
+            }
+            else if(result.error === 'Something went wrong during verification' ) {
+              this.messageService.add({ severity: 'error', summary: 'Failed', detail: result.error +', '+ 'Invalid User Selected' });
             }
           });
         }).catch(error => {

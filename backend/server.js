@@ -125,21 +125,16 @@ const checkDuplication = (req, res, next) => {
 
 
 // add user
-app.post('/users/add-user', checkDuplication, async(req, res) => {
+app.post('/users/add-user', checkDuplication, async (req, res) => {
   try {
     console.log('Request body:', req.body);
-    // const employeeid = `employee_${Date.now()}`;
     const { username, email, password } = req.body;
 
-    const existingEmployee = await MySchema.Employee.findOne({
-      $or: [
-      { username: username },
-      { email: email }]
-    });
+    // Check if both username and email exist in the same row in the Employee collection
+    const existingEmployee = await MySchema.Employee.findOne({ username, email });
 
     if (!existingEmployee) {
       console.log('Employee not found:', existingEmployee);
-      
       return res.status(400).json({
         message: 'Employee with this email or username not registered',
         status: 400,
@@ -147,34 +142,22 @@ app.post('/users/add-user', checkDuplication, async(req, res) => {
       });
     }
 
-
-    employeeid = existingEmployee.employeeid;
-    role = existingEmployee.role;
+    const employeeid = existingEmployee.employeeid;
+    const role = existingEmployee.role;
     console.log('Employee found:', existingEmployee);
-    
+
     const newUser = new MySchema.User({ employeeid, role, username, email, password });
-    newUser.save()
-    .then(user => {
-      console.log('User saved:', user);
-      res.status(201).json({
-        message: 'User Register successfully',
-        status: '201',
-        user: user
-      });
-    })
-    .catch(err => {
-      console.error('Error saving user:', err); // Log errors
-      res.status(500).json({
-        message: 'Failed to add user',
-        status: '500',
-        error: err
-      });
+    await newUser.save();
+    console.log('User saved:', newUser);
+    res.status(201).json({
+      message: 'User registered successfully',
+      status: '201',
+      user: newUser
     });
   } catch (err) {
     console.error('Error:', err);
-    res.status(500).json({ message: 'Failed to Register user', status: 500, error: err });
+    res.status(500).json({ message: 'Failed to register user', status: 500, error: err });
   }
-
 });
 
 
@@ -499,30 +482,25 @@ app.get('/employee/statistics', async (req, res) => {
     // Get total number of employees
     const totalEmployees = await MySchema.Employee.countDocuments();
 
-    // Get total number of attendances marked today
+    // Get total attendances for today
     const totalAttendances = await MySchema.Attendence.countDocuments({
       coming: { $gte: today, $lt: tomorrow }
     });
 
-    // Aggregate role counts from Employee collection
+    // Get total employees per role
     const roleCounts = await MySchema.Employee.aggregate([
       { $match: { is_deleted: 0 } },
       { $group: { _id: "$role", count: { $sum: 1 } } }
     ]);
 
-    // Aggregate attendance counts by role for today
+    // Get today's attendance per role
     const attendanceRoleCounts = await MySchema.Attendence.aggregate([
       { $match: { coming: { $gte: today, $lt: tomorrow } } },
-      {
-        $addFields: {
-          employeeid: { $toString: "$employeeid" } // Convert employeeid to string for consistency
-        }
-      },
       {
         $lookup: {
           from: 'employees',
           localField: 'employeeid',
-          foreignField: 'employeeid', // Ensure this matches the field name in Employee
+          foreignField: 'employeeid',
           as: 'employee'
         }
       },
@@ -530,29 +508,41 @@ app.get('/employee/statistics', async (req, res) => {
       { $group: { _id: '$employee.role', count: { $sum: 1 } } }
     ]);
 
-    // Log attendanceRoleCounts to see if it's correctly populated
-    console.log('Attendance by Role:', attendanceRoleCounts);
+    // Convert to key-value map
+    const totalRoleCounts = {};
+    roleCounts.forEach(role => {
+      totalRoleCounts[role._id] = role.count;
+    });
 
-    // Create a map of role counts (total employees per role)
-    const roleCountMap = roleCounts.reduce((acc, role) => {
-      acc[role._id] = role.count;
-      return acc;
-    }, {});
+    const presentRoleCounts = {};
+    attendanceRoleCounts.forEach(role => {
+      presentRoleCounts[role._id] = role.count;
+    });
 
-    // Create a map of attendance counts (attendance marked per role for today)
-    const attendanceRoleCountMap = attendanceRoleCounts.reduce((acc, role) => {
-      acc[role._id] = role.count;
-      return acc;
-    }, {});
+    // Calculate absent counts
+    const absentRoleCounts = {};
+    Object.keys(totalRoleCounts).forEach(role => {
+      absentRoleCounts[role] = totalRoleCounts[role] - (presentRoleCounts[role] || 0);
+    });
 
-    // Return response with the statistics
+    // Total absent employees
+    const totalAbsent = totalEmployees - totalAttendances;
+
     res.status(200).json({
       message: 'Statistics retrieved successfully',
       status: '200',
-      totalEmployees: totalEmployees,
-      totalAttendances: totalAttendances,
-      roleCounts: roleCountMap,
-      attendanceRoleCounts: attendanceRoleCountMap
+      total: {
+        totalEmployees,
+        totalRoleCounts
+      },
+      present: {
+        totalPresent: totalAttendances,
+        presentRoleCounts
+      },
+      absent: {
+        totalAbsent,
+        absentRoleCounts
+      }
     });
 
   } catch (err) {

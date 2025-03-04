@@ -33,10 +33,10 @@ export class RevenueStreamWidget {
     ngOnInit() {
         this.employeeStatistics();
         console.log('get data');
-        setTimeout(() => {
-            this.updateChart();
-            console.log('update data');
-        }, 3000);
+        // setTimeout(() => {
+        //     this.updateChart();
+        //     console.log('update data');
+        // }, 3000);
         
     }
 
@@ -127,18 +127,18 @@ export class RevenueStreamWidget {
 
         this.apiService.getEmployeeStatistics().subscribe((response: any) => {
             console.log(response);
-            this.super_admin.push(response.roleCounts.super_admin);
-            this.admin.push(response.roleCounts.admin);
-            this.user.push(response.roleCounts.user);
+            // this.super_admin.push(response.roleCounts.super_admin);
+            // this.admin.push(response.roleCounts.admin);
+            // this.user.push(response.roleCounts.user);
             
-            this.super_admin.push(10, 20);
-            this.admin.push(10, 20);
-            this.user.push(10, 20);
+            // this.super_admin.push(10, 20);
+            // this.admin.push(10, 20);
+            // this.user.push(10, 20);
 
-            console.log('Super Admin', this.super_admin);
+            // console.log('Super Admin', this.super_admin);
             
-            console.log('total attendence', response.totalAttendances);
-            console.log('total employee', response.totalEmployees);
+            // console.log('total attendence', response.totalAttendances);
+            // console.log('total employee', response.totalEmployees);
         });
     }
 

@@ -11,7 +11,7 @@ export const adminAuthGuard: CanActivateFn = (route, state) => {
   const currentLoginUserDetails = stateService.getCurrentLoginUserDetails();
 
 
-  if (currentLoginUserDetails.employeeRole === 'admin') {
+  if (currentLoginUserDetails.employeeRole === 'admin' || currentLoginUserDetails.employeeRole === 'super_admin') {
     return true; // Navigation is allowed
   } else {
     router.navigate(['/auth/login']); // Redirect to login

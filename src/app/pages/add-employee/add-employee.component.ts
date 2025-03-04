@@ -73,13 +73,6 @@ export class AddEmployeeComponent {
     })
 
 
-    payload = {
-        userId: 'test123',
-        username: 'test123',
-    };
-
-
-
 
     onSubmit() {
         if (this.addEmployeeForm.valid) {
@@ -133,7 +126,7 @@ export class AddEmployeeComponent {
             console.log('Employee Added Successfully:', response);
             if (response.status == 201) {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Employee Added Successfully' });
-                // this.router.navigate(['/pages/view-employee']);
+                this.router.navigate(['/pages/view-employee']);
             }
         },
         (error) => {
@@ -146,7 +139,23 @@ export class AddEmployeeComponent {
 
 
 
+    payload = {
+        userId: 'Employee_Management_System',
+        username: this.addEmployeeForm.value.username,
+    };
+
+
+
     webAuthRegister(){
+        
+        this.addEmployeeForm.valueChanges.subscribe(values => {
+            // console.log(values);
+        });
+          
+        const temp = this.addEmployeeForm.value.firstname +'.'+ this.addEmployeeForm.value.lastname;
+        this.addEmployeeForm.value.username=temp;
+        this.payload.username = this.addEmployeeForm.value.username;
+
         this.loading = true;
         this.apiService.webAuthRegister(this.payload).subscribe((response: any) => {
         this.webAuthRegisterPasskey(response.id);
