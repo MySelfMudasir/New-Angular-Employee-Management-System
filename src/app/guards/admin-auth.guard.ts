@@ -9,11 +9,12 @@ export const adminAuthGuard: CanActivateFn = (route, state) => {
 
 
   const currentLoginUserDetails = stateService.getCurrentLoginUserDetails();
-
-
-  if (currentLoginUserDetails.employeeRole === 'admin' || currentLoginUserDetails.employeeRole === 'super_admin') {
+    
+  if (currentLoginUserDetails && (currentLoginUserDetails.employeeRole === 'admin' || currentLoginUserDetails.employeeRole === 'super_admin')) {    
+    console.log('You are authorized to view this page');
     return true; // Navigation is allowed
   } else {
+    console.log('You are not authorized to view this page');
     router.navigate(['/auth/login']); // Redirect to login
     return false; // Prevent navigation
   }

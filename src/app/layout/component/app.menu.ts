@@ -12,9 +12,8 @@ import { StateService } from '../../services/state.service';
     template: `
         <ul class="layout-menu">
             <ng-container *ngFor="let item of model; let i = index">
-                <!-- [class.hidden]="isItemHidden(item)"  -->
-                <li 
-                    app-menuitem
+                <li app-menuitem
+                    [class.hidden]="isItemHidden(item)" 
                     [item]="item" 
                     [index]="i" 
                     [root]="true">
@@ -121,6 +120,9 @@ export class AppMenu {
                 icon: 'pi pi-fw pi-briefcase',
                 routerLink: ['/pages'],
                 items: [
+                    {
+                        label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/']
+                    },
                     {
                         label: 'Add Employee',
                         icon: 'pi pi-fw pi-user-plus',

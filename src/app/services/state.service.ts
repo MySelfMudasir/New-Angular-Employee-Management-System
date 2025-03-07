@@ -18,8 +18,8 @@ export class StateService {
   }
 
   getCurrentLoginUserDetails() {
-    const CurrentLoginUserDetails = localStorage.getItem('CurrentLoginUserDetails') || '';
-    const currentLoginUserDetails = JSON.parse(CurrentLoginUserDetails);
+  const currentLoginUserDetailsString = localStorage.getItem('CurrentLoginUserDetails') || null;
+  const currentLoginUserDetails = currentLoginUserDetailsString ? JSON.parse(currentLoginUserDetailsString) : null;
     return currentLoginUserDetails;
   }
 

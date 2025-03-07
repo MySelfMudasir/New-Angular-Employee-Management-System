@@ -123,19 +123,7 @@ export class Login {
                     this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
                     this.router.navigate(['/pages/add-employee']);
                 }
-                if (response.status == 200 && response.employeeRole == "admin") {
-                    const CurrentLoginUserPayload = {
-                        employeeId: response.employeeId,
-                        employeeUsername: response.employeeUsername,
-                        employeeEmail: response.employeeEmail,
-                        employeeRole: response.employeeRole,
-                        token: response.token
-                    }
-                    // Set user details in state service
-                    this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
-                    this.router.navigate(['/pages/add-employee']);
-                }
-                if (response.status == 200 && response.employeeRole == "user") {
+                else if (response.status == 200 && response.employeeRole == "user") {
                     const CurrentLoginUserPayload = {
                         employeeId: response.employeeId,
                         employeeUsername: response.employeeUsername,
@@ -146,6 +134,18 @@ export class Login {
                     // Set user details in state service
                     this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
                     this.router.navigate(['/pages/employee-attendence']);
+                }
+                else {
+                    const CurrentLoginUserPayload = {
+                        employeeId: response.employeeId,
+                        employeeUsername: response.employeeUsername,
+                        employeeEmail: response.employeeEmail,
+                        employeeRole: response.employeeRole,
+                        token: response.token
+                    }
+                    // Set user details in state service
+                    this.stateService.setCurrentLoginUserDetails(CurrentLoginUserPayload);
+                    this.router.navigate(['/pages/add-employee']);
                 }
             },
             (error) => {

@@ -137,8 +137,8 @@ export class RevenueStreamWidget {
 
             // console.log('Super Admin', this.super_admin);
             
-            console.log('total attendence', response.totalAttendances);
-            console.log('total employee', response.totalEmployees);
+            // console.log('total attendence', response.totalAttendances);
+            // console.log('total employee', response.totalEmployees);
         });
     }
 
